@@ -1,0 +1,128 @@
+body{
+	background-color: #6b6f73;
+	background:url("/images/back.png");
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+	background-blend-mode: lighten;
+	font-family: sans-serif;
+}
+header{
+	padding: 0;
+	height: 50px;
+	width: 100%;
+	background-color: #468e82;
+}
+.title{
+	margin:auto;
+	left:0;
+	right:0;
+	text-align: center;
+	padding: 0;
+	color:white;
+	font-size: 38px;
+	height: 50px;
+}
+.container{
+	margin:70px 7% 0 7%;
+	padding: 0;
+	height: 84vh;
+
+}
+.empty{
+	margin:0;
+	width:60%;
+	float: left;
+	height: 400px;
+	background-color: transparent;
+	display: inline-block;
+}
+input{
+	display: block;
+	width:100%;
+	border:none;
+	padding-right: 10%;
+	padding-left: 10%;
+	margin: 0 15% 0 15%;
+	outline: none;
+	border-radius: 5px;
+}
+#showpass{
+	display: inline-block;
+	margin-left: 0;
+}
+.login{
+	float: left;
+	display: inline-block;
+	margin:0;
+	width:40%;
+	height: 400px;
+	background-color: transparent;
+}
+.logininner>form{
+	margin:0;
+	padding:30px 15% 0 15%;
+}
+.logininner>form>button{
+	width:100%;
+	background-color: #468e82;
+	color:white;
+	font-family: sans-serif;
+	border:none;
+	border-radius: 5px;
+	margin-bottom: 15%;
+}
+.logininner{
+	color:white;
+}
+.logininner>form>button:hover{
+	background-color: black;
+}
+.spani{
+	width:100%;
+	text-align: center;
+}
+.spani2{
+	display: none;
+}
+.signup{
+	display: none;
+}
+.signupb{
+	outline: none;
+	border:none;
+	padding: 0 10px;
+	border-radius: 5px;
+	margin:0;
+	margin-top:5px;
+	background-color: #468e82;
+	color:white;
+}
+.signupb:hover{
+	color:black;
+}
+
+footer{
+	height: 40px;
+	background-color: #468e82;
+}
+.footer2{
+	padding: 10px;
+	text-align: center;
+	height:20px;
+	width:100%;
+	color:white;
+}
+
+@media only screen and (max-width:620px){
+	.empty{
+		display: none;
+	}
+	.login{
+		width:100%;
+	}
+	.mconnect{
+		font-size: 20px;
+		padding-top: 10px;
+	}
+}

@@ -1,0 +1,86 @@
+<head>
+	<title>Social</title>
+	<script url="main.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/requests.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<script>
+			$(document).ready(function(){
+			$(".navbsmall").click(function(){
+				$(".menub").toggle();
+				$(document).mouseup((e)=>{
+						if($(e.target).closest('.menub').length===0){
+							$('.menub').hide();
+						}
+					})
+			})
+		})
+	</script>
+</head>
+<body>
+
+
+	<!-- navbar -->
+	<header>
+		<nav>
+			<div class="navlogo"><a href="/"><img src="images/logo.png" width="36px;" height="100%"></a></div>
+			<div class="navbarsearch">
+				<form class="navbarsearchform" method="POST" action="/search">
+					<input id="input" type="text" name="searchname" placeholder="search ...">
+					<input id="submit" type="submit" value="GO">
+				</form>
+			</div>
+			<button class="navb" ><a href="/profile">Profile</a></button>
+			<button class="navb"><a href="/ananomous">Ananomous</a></button>
+			<button class="navb"><a href="/logout">Log out</a></button>
+			<button class="navbsmall">|||</button>
+		</nav>
+	</header>
+
+	<div class="menu">
+		<button class="menub"><a href="/ananomous">Ananomous</a></button>
+		<button class="menub"><a href="/logout">Log out</a></button>
+	</div>
+
+
+
+		<!-- phonebar -->
+		<div class="phonebar">
+		<div class="phonebarinner">
+					<button class="phonebarbutton"><span class="phonebarimage"><img style="border-radius: 100px;" src="<%= user.profilephoto %>" height="20px" width="20px"></span><span class="phonebarlink"><a href="/profile"><%= user.firstName%></a></span></button>
+					<button class="phonebarbutton"><span class="phonebarimage"><img src="/images/friends.png" height="20px" width="20px"></span><span class="phonebarlink"><a href="/friends">Friends</a></span></button>
+					<button class="phonebarbutton"><span class="phonebarimage"><img src="/images/requests.png" height="20px" width="20px"></span><span class="phonebarlink"><a href="/requests">Requests</a></span></button>
+			</div>
+		</div>
+
+	<!-- body -->
+	<div class="container">
+	<%friends.forEach(friend=>{
+		if(friend.status==="pending"){ %>
+		<div class="friend">
+			<div class="friendimage">
+				<img src="<%= friend.friend.profilephoto%>" height="106px" width="106px" style="border-radius:100px">
+			</div>
+			<div class="friendname">
+				<h6 style="margin:5px 0 0 0;height:20px;padding-left:10px;color:white;"><%= friend.friend.firstName%> <%= friend.friend.surName%></h6>
+				<h6 style="margin:0px 0 0 0;height:20px;padding-left:10px;color:white;"><%= friend.friend.currenttown%></h6>
+				<h6 style="margin:0 0 0 0;padding-left:10px;color:white">@<%= friend.friend.username%></h6>	
+					<form style="margin-block-end:0;" action="/requestsaccept" method="POST">
+							<input type="hidden" name="sendto" value="<%= friend.friend.username %>"/>
+							<button class="acceptfriend">Accept</button>
+					</form>
+					<form style="margin-block-end:0;" action="/requestsaccept" method="POST">
+							<input type="hidden" name="sendto" value="<%= friend.friend.username %>"/>
+							<button class="rejectfriend">Reject</button>
+					</form>
+			</div>
+		</div>
+		<% }}); %>	
+	</div>
+	<footer class="col-10">
+		<div class="footer2">Made By Hipranshu (7737283112)</div>
+	</footer>
+</body>

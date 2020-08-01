@@ -1,0 +1,789 @@
+var express     =require('express'),
+    app         =new express(),
+    path        =require('path'),
+    mongooose   =require('mongoose'),
+    passport    =require('passport'),
+    bodyParser  =require('body-parser'),
+    LocalStrategy=require('passport-local'),
+    passportLocalMongoose=require('passport-local-mongoose'),
+    friendsPlugin=require('mongoose-friends-plugin'),
+    timestamps=require('mongoose-timestamp');
+
+
+
+//---------------
+// Mongooose
+//---------------
+
+
+var mongoose=require('mongoose');
+mongoose.Promise=global.Promise;
+var url='mongodb://localhost:27017/';
+mongoose.connect(url,{ useUnifiedTopology: true, useNewUrlParser: true });
+var db=mongoose.connection;
+db.on('error',console.error.bind(console,'MongoDb connection error'));
+mongoose.set('useCreateIndex',true);
+
+
+
+//---------------
+// All schemas
+//---------------
+
+var comment=new mongoose.Schema({
+    text:String,
+    likes:Number,
+    author:{
+        id:{type:mongoose.Schema.Types.ObjectId,
+            ref:"User"},
+        username:String
+    }
+});
+
+var UserSchema=new mongoose.Schema({
+    firstName: String,
+    surName:String,
+    username:String,
+    password:String,
+    profilephoto:String,
+    coverphoto:String,
+    birthdate:String,
+    friends:[String],
+    requests:[String],
+    posts:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Post"
+    }],
+    aposts:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Apost"
+    }],
+    hometown:String,
+    currenttown:String,
+    state:String,
+    about:String
+});
+
+
+var post=new mongoose.Schema({
+    author:{
+        id:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"User"},
+        username:String,
+        profilephoto:String
+    },
+    image:String,
+    caption:String,
+    likes:Number,
+    likesby:[{
+        id:{type:mongoose.Schema.Types.ObjectId,
+            ref:"UserSchema"},
+        username:String
+    }],
+    comments:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref: "Comment"
+    }]
+});
+
+var ananomouspostschema=new mongoose.Schema({
+    image:String,
+    caption:String,
+    likes:Number,
+    likesby:[{
+        id:{type:mongoose.Schema.Types.ObjectId,
+            ref:"UserSchema"},
+        username:String
+    }],
+    comments:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref: "Comment"
+    }]
+});
+
+UserSchema.plugin(passportLocalMongoose);
+UserSchema.plugin(friendsPlugin());
+UserSchema.plugin(timestamps);
+post.plugin(timestamps);
+ananomouspostschema.plugin(timestamps);
+comment.plugin(timestamps);
+var User=mongoose.model('User',UserSchema);
+var Comment=mongoose.model('Comment',comment);
+var Post=mongoose.model('Post',post);
+var Apost=mongoose.model('Apost',ananomouspostschema);
+
+
+
+
+//-----------------
+//all uses
+//-----------------
+
+app.set('view engine','ejs');
+app.use(express.static(path.join(__dirname,'/')));
+app.use(bodyParser.urlencoded({extended:true}));
+app.use(require("express-session")({
+    secret:"hipsipass",
+    resave:false,
+    saveUninitialized:false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+app.use((req,res,next)=>{
+    res.locals.currentUser=req.user;
+    next();
+});
+
+
+
+
+
+//-------------------
+// Routing
+//-------------------
+
+app.get('/',isLoggedIn,(req,res)=>{
+    res.redirect('/home');
+})
+
+
+app.get('/home',isLoggedIn,(req,res)=>{
+    User.findById(req.user._id,(err,user)=>{
+        Post.find().populate('comments').sort({updatedAt:-1}).exec((err,posts)=>{
+            user.getFriends().then((friends)=>{
+                Apost.find().populate('comments').sort({updatedAt:-1}).exec((err,aposts)=>{
+                    res.render('main',{friends:friends,user:user,posts:posts,aposts:aposts});
+                });
+            });
+        });
+    });
+});
+
+
+
+app.get('/login',(req,res)=>{
+    res.render('login');
+});
+
+app.post('/login',passport.authenticate("local",{
+    successRedirect:"/home",
+    failureRedirect:"login"
+}),(req,res)=>{
+    Post.find({}).populate("comments").sort({updatedAt:1}).exec((err,posts)=>{
+        posts.forEach(post=>{
+            User.findOne(post.author.id,(err,postuser)=>{
+                postuser.getFriends().then((friends)=>{
+                    friends.forEach(friend=>{
+
+                        if(friend.status==="accepted"){
+                            allposts.push(post);   
+                            
+                        }
+                    })
+                })
+            })
+        })
+    })
+    // console.log(allposts);
+        User.findById(req.user._id,(req,curuser)=>{
+            res.render('main',{user:curuser,eposts:allposts});
+            allposts.splice(0,allposts.length);
+        })  
+});
+
+app.get('/logout',(req,res)=>{
+	req.logout();
+	res.redirect("/login");
+});
+
+app.post('/signup',(req,res)=>{
+    if(req.body.password!=req.body.password2){
+        console.log("Password not matched");
+        res.redirect('back');
+    }
+    else{
+    var newuser={profilephoto:"profile.png",coverphoto:"cover.png",firstName:req.body.firstname,surName:req.body.surname,username:req.body.username};
+    User.register(newuser,req.body.password,(err,newlycreated)=>{
+        if(err){
+            console.log(err);
+            return res.render('login');
+        }
+        else {
+            passport.authenticate("local")(req,res,()=>{
+            res.render('main',{user:newlycreated});        
+        });
+        }
+    });    
+    }
+});
+
+
+
+
+
+//----------------------------
+//friends
+//----------------------------
+
+app.get('/friends',isLoggedIn,(req,res)=>{
+    User.findById(req.user._id).populate('friends').exec((err,user)=>{
+        user.getFriends().then((friends)=>{
+            res.render('friends',{user:user,friends:friends});
+        })
+    })
+})
+
+app.get('/requests',isLoggedIn,(req,res)=>{
+    User.findById(req.user._id).populate('friends').exec((err,user)=>{
+        user.getFriends().then((friends)=>{
+            res.render('requests',{user:user,friends:friends});
+        })
+    })  
+})
+
+
+
+
+
+//---------------------
+//profile
+//---------------------
+
+app.get('/profile',isLoggedIn,(req,res)=>{
+    var username=req.user.username;
+    User.findOne({username:username}).populate("posts").populate({path:'posts',populate:{path:'comments'}}).exec((err,user)=>{
+        user.getFriends().then((friends)=>{
+            res.render('profile',{user:user,friends:friends});
+        }); 
+    });
+});
+
+
+app.post('/profile/uploadprofilephoto',(req,res)=>{
+    var username=req.user.username;
+    var image=req.body.image;
+    User.findOneAndUpdate({username:username},{profilephoto:image},{new:true},(err,user)=>{
+        if(err){console.log(err);}
+        else{
+            Post.find({'author.username':username},(err,posts)=>{
+                if(err){
+                    console.log(err);
+                }
+                else{
+                    posts.forEach(post=>{
+                        post.author.profilephoto=image;
+                        post.save();
+                    })
+                    res.redirect('/profile');
+                }
+            });
+        }
+    });
+});
+
+app.post('/profile/uploadcoverphoto',(req,res)=>{
+    var username=req.user.username;
+    var image=req.body.image;
+    User.findOneAndUpdate({username:username},{coverphoto:image},{new:true},(err,user)=>{
+        if(err){console.log(err);}
+        else{
+            res.redirect('/profile');
+        }
+    });
+});
+
+app.post('/profile/uploadinfo',(req,res)=>{
+    var username=req.user.username;
+    var user={birthdate:req.body.birthdate,
+        currenttown:req.body.currentcity,
+        hometown:req.body.hometown,
+        state:req.body.state,
+        about:req.body.about
+    }
+    console.log(user);
+    User.findOneAndUpdate({username:username},user,{new: true},(err,user)=>{
+        if(err){console.log(err);}
+        else{
+            res.redirect('/profile');
+        }
+    });
+});
+
+
+
+
+
+
+
+
+//-------------------------
+//search
+//--------------------------
+
+app.post('/search',(req,res)=>{
+    var search=req.body.searchname;
+    User.find({firstName:search},(err,users)=>{
+        if(err){
+            console.log(err);
+            res.render('back');
+        }
+        else{
+            User.findOne({username:req.user.username},(err,curuser)=>{
+            if(err){
+                console.log(err);
+            }    
+            else{
+                User.getFriends(curuser).then((friendstatus)=>{
+                res.render('search',{user:curuser,data:users,friendstatus:friendstatus,search:search});                    
+                });
+
+            }
+        });  
+        }
+    });
+});
+
+
+
+
+
+
+//--------------------------
+//ananomous
+//--------------------------
+
+app.get('/ananomous',isLoggedIn,(req,res)=>{
+    User.findById(req.user._id).populate('aposts').exec((err,user)=>{
+        Apost.find().populate('comments').sort({updatedAt:-1}).exec((err,aposts)=>{
+            user.getFriends().then((friends)=>{  
+                res.render('ananomous',{friends:friends,user:user,posts:aposts});
+            })
+        })
+    })
+})
+
+
+
+
+
+
+
+//-------------------------
+//friend
+//-------------------------
+
+app.post('/addfriend',(req,res)=>{
+    var search=req.body.searchname;
+    User.findOne({username:req.user.username},(err,curuser)=>{
+        if(err){
+            console.log(err);
+        }else{
+        User.findOne({username:req.body.sendto},(err,sendtouser)=>{
+            if(err){
+                console.log(err);
+            }else{
+                curuser.requestFriend(sendtouser).then(()=>{
+                    User.find({firstName:search},(err,users)=>{
+                        if(err){
+                            console.log(err);
+                            res.render('back');
+                        }
+                        else{
+                            User.findOne({username:req.user.username},(err,curuser)=>{
+                                if(err){
+                                    console.log(err);
+                                }    
+                                else{
+                                    User.getFriends(curuser).then((friendstatus)=>{
+                                        res.render('search',{user:curuser,data:users,friendstatus:friendstatus,search:search});                    
+                                    });
+
+                                }
+                            });  
+                        }
+                    });                    
+                })
+            }
+        });
+        }
+    });
+});
+app.post('/removefriend',(req,res)=>{
+    var search=req.body.searchname;
+    User.findOne({username:req.user.username},(err,curuser)=>{
+        if(err){
+            console.log(err);
+        }else{
+        User.findOne({username:req.body.sendto},(err,sendtouser)=>{
+            if(err){
+                console.log(err);
+            }else{
+                curuser.removeFriend(sendtouser).then(()=>{
+                    User.find({firstName:search},(err,users)=>{
+                        if(err){
+                            console.log(err);
+                            res.render('back');
+                        }
+                        else{
+                            User.findOne({username:req.user.username},(err,curuser)=>{
+                                if(err){
+                                    console.log(err);
+                                }    
+                                else{
+                                    User.getFriends(curuser).then((friendstatus)=>{
+                                        res.render('search',{user:curuser,data:users,friendstatus:friendstatus,search:search});                    
+                                    });
+
+                                }
+                            });  
+                        }
+                    });  
+                })
+            }
+        });
+        }
+    });
+})
+
+app.post('/requestsaccept',(req,res)=>{
+    User.findOne({username:req.user.username},(err,curuser)=>{
+        if(err){
+            console.log(err);
+        }else{
+            User.findOne({username:req.body.sendto},(err,sendtouser)=>{
+                if(err){
+                    console.log(err);
+                }else{
+                    curuser.requestFriend(sendtouser).then(()=>{
+                        User.findById(req.user._id).populate('friends').exec((err,user)=>{
+                            user.getFriends().then((friends)=>{
+                                res.render('requests',{user:user,friends:friends});
+                            })
+                        })         
+                    });
+                }
+            });
+        }
+    });
+});
+
+app.post('/friendsremove',(req,res)=>{
+    User.findOne({username:req.user.username},(err,curuser)=>{
+        if(err){
+            console.log(err);
+        }else{
+        User.findOne({username:req.body.sendto},(err,sendtouser)=>{
+            if(err){
+                console.log(err);
+            }else{
+                curuser.removeFriend(sendtouser).then(()=>{
+                    User.findById(req.user._id).populate('friends').exec((err,user)=>{
+                        user.getFriends().then((friends)=>{
+                            res.render('friends',{user:user,friends:friends});
+                        })
+                    })                
+                })
+            }
+        });
+        }
+    });
+
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+//---------------------------
+//post function
+//---------------------------
+
+app.post('/newpost',isLoggedIn,(req,res)=>{
+    User.findById(req.user._id,(err,user)=>{
+        if(err){
+            console.log(err);
+            res.redirect('/');
+        }
+        else{
+            var newpost={
+                image:req.body.postimage,
+                caption:req.body.posttext
+            };
+            Post.create(newpost,(err,post)=>{
+                if(err){
+                    console.log(err);
+                }else{
+                post.author.id=req.user._id;
+                post.author.username=user.username;
+                post.author.profilephoto=user.profilephoto;
+                post.likes=0;
+                post.save();
+                user.posts.push(post);
+                user.save();
+                res.redirect('back');
+                }        
+            })
+        }
+    });
+});
+
+
+app.post('/ananomous/newpost',isLoggedIn,(req,res)=>{
+    
+    var newpost={
+        image:req.body.postimage,
+        caption:req.body.posttext
+    };
+    Apost.create(newpost,(err,post)=>{
+        if(err){
+            console.log(err);
+        }else{
+            User.findById(req.user._id,(err,user)=>{
+                post.likes=0;
+                post.save();
+                user.aposts.push(post);
+                user.save();
+                res.redirect('back');
+            })
+        }        
+    })
+});
+
+
+
+app.post('/:postid/comment/:comment',isLoggedIn,(req,res)=>{
+    var postId=req.params.postid;
+    var username=req.user.username;
+    var comment=req.params.comment;
+    var userId=req.user._id;
+    Post.findById(postId,(err,post)=>{
+        if(err){
+            console.log(err);
+        }
+        else{
+            var newcomment={text:comment,likes:0};
+            Comment.create(newcomment,(err,comm)=>{
+                comm.author.id=userId;
+                comm.author.username=username;
+                comm.save();
+                post.comments.push(comm._id);
+                post.save();
+                res.send({comm:comm});
+            })
+        }
+    })
+})
+
+app.post('/profile/:postid/comment/:comment',isLoggedIn,(req,res)=>{
+    var postId=req.params.postid;
+    var username=req.user.username;
+    var comment=req.params.comment;
+    var userId=req.user._id;
+    Post.findById(postId,(err,post)=>{
+        if(err){
+            console.log(err);
+        }
+        else{
+            var newcomment={text:comment,likes:0};
+            Comment.create(newcomment,(err,comm)=>{
+                comm.author.id=userId;
+                comm.author.username=username;
+                comm.save();
+                post.comments.push(comm._id);
+                post.save();
+                res.send({comm:comm});
+            })
+        }
+    })
+})
+
+app.post('/ananomous/:postid/comment/:comment',isLoggedIn,(req,res)=>{
+    var postId=req.params.postid;
+    var username=req.user.username;
+    var comment=req.params.comment;
+    var userId=req.user._id;
+    Apost.findById(postId,(err,post)=>{
+        if(err){
+            console.log(err);
+        }
+        else{
+            var newcomment={text:comment,likes:0};
+            Comment.create(newcomment,(err,comm)=>{
+                comm.author.id=userId;
+                comm.author.username=username;
+                comm.save();
+                post.comments.push(comm._id);
+                post.save();
+                res.send({comm:comm});
+            })
+        }
+    })
+})
+
+app.post('/:postid/like/:s',isLoggedIn,(req,res)=>{
+    Post.findById(req.params.postid,(err,post)=>{
+        if(err){
+            console.log(err);
+        }
+        else{
+            if(req.params.s==="false"){
+                post.likes+=1;
+                User.findOne({username:req.user.username},(err,user)=>{
+                    if(err){
+                        console.log(err);
+                    }
+                    else{
+                        post.likesby.push({id:user._id,username:user.username});
+                        post.save();
+                        res.send({likecount:post.likes});
+                    }
+                })
+            }
+            else{
+                post.likes-=1;
+                User.findOne({username:req.user.username},(err,user)=>{
+                    if(err){
+                        console.log(err);
+                    }
+                    else{
+                        var index=post.likesby.indexOf({id:user._id,username:user.username});
+                        post.likesby.splice(index,1);
+                        post.save();
+                        res.send({likecount:post.likes});
+                    }
+                })
+            }
+        }
+    })
+})
+
+app.post('/profile/:postid/like/:s',isLoggedIn,(req,res)=>{
+    Post.findById(req.params.postid,(err,post)=>{
+        if(err){
+            console.log(err);
+        }
+        else{
+            if(req.params.s==="false"){
+                post.likes+=1;
+                User.findOne({username:req.user.username},(err,user)=>{
+                    if(err){
+                        console.log(err);
+                    }
+                    else{
+                        post.likesby.push({id:user._id,username:user.username});
+                        post.save();
+                        res.send({likecount:post.likes});
+                    }
+                })
+            }
+            else{
+                post.likes-=1;
+                User.findOne({username:req.user.username},(err,user)=>{
+                    if(err){
+                        console.log(err);
+                    }
+                    else{
+                        var index=post.likesby.indexOf({id:user._id,username:user.username});
+                        post.likesby.splice(index,1);
+                        post.save();
+                        res.send({likecount:post.likes});
+                    }
+                })
+            }
+        }
+    })
+})
+
+app.post('/ananomous/:postid/like/:s',isLoggedIn,(req,res)=>{
+    Apost.findById(req.params.postid,(err,post)=>{
+        if(err){
+            console.log(err);
+        }
+        else{
+            if(req.params.s==="false"){
+                post.likes+=1;
+                User.findOne({username:req.user.username},(err,user)=>{
+                    if(err){
+                        console.log(err);
+                    }
+                    else{
+                        post.likesby.push({id:user._id,username:user.username});
+                        post.save();
+                        res.send({likecount:post.likes});
+                    }
+                })
+            }
+            else{
+                post.likes-=1;
+                User.findOne({username:req.user.username},(err,user)=>{
+                    if(err){
+                        console.log(err);
+                    }
+                    else{
+                        var index=post.likesby.indexOf({id:user._id,username:user.username});
+                        post.likesby.splice(index,1);
+                        post.save();
+                        res.send({likecount:post.likes});
+                    }
+                })
+            }
+        }
+    })
+})
+
+app.post('/profile/:postid/delete',isLoggedIn,(req,res)=>{
+    Post.findByIdAndDelete(req.params.postid,(err)=>{
+        if(err){
+            res.send("err");
+        }
+        else{
+            res.send("ok");
+        }
+    })
+})
+
+app.post('/profile/:postid/edit/:newcomment',(req,res)=>{
+    Post.findOneAndUpdate({_id:req.params.postid},{caption:req.params.newcomment},{new:true},(err,post)=>{
+        if(err){
+            console.log(err);
+        }       
+        else{
+            res.send(post.caption);
+        }
+    })
+})
+
+
+
+
+
+
+//----------------------------
+//functions
+//----------------------------
+
+function isLoggedIn(req,res,next){
+    if(req.isAuthenticated()){
+        return next();
+    }
+    res.redirect("/login");
+}
+
+
+
+app.listen(3000,()=>{
+    console.log('Server running');
+});

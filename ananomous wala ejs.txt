@@ -1,0 +1,279 @@
+<head>
+	<title>Social</title>
+	<script url="main.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/ananomous.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<script>
+		function adjusttextarea(o){
+			o.style.height="1px";
+			o.style.height=(25+o.scrollHeight)+"px";
+		}
+		$(document).ready(function(){
+			$('.show').click(()=>{
+				$('.useraposts').toggle();
+				$('.allaposts').toggle();
+			})
+		})
+		$(document).ready(function(){
+			$(".navbsmall").click(function(){
+				$(".menub").toggle();
+				$(this).toggleClass('.navbsmallteda');
+			})
+		})
+		$(document).ready(function() {
+			$('.likeb').click(function(){
+				var postid=$(this)[0].value;
+				var s=$(this).attr('data-cur');
+				if(s==="true"){
+					$.post('/ananomous/'+postid+'/like/'+s,(res)=>{
+						$(this).css("color","white");
+						$(this).attr('data-cur',"false");
+						var x="likes"+postid;
+						$('.'+x).text(res.likecount+' likes');
+					});
+				}else if(s==="false"){
+					$.post('/ananomous/'+postid+'/like/'+s,(res)=>{
+						$(this).css("color","blue")
+						$(this).attr('data-cur',"true");
+						var x="likes"+postid;
+						$('.'+x).text(res.likecount+' likes');
+					});
+				}
+			})
+		})
+		$(document).ready(function(){
+			$('.commentform').submit(function(e){
+				e.preventDefault();
+				var x=($(this).serializeArray());
+				var postid=x[0].value;
+				var comment=x[1].value;
+				$.post('/ananomous/'+postid+'/comment/'+comment,(res)=>{
+					var d='<div class="eachcomment">'+
+									'<span class="eachcommentauthor">'+
+										res.comm.author.username +' • '+
+									'</span>'+
+									'<span class="eachcommenttext">'+
+										res.comm.text+
+									'</span>'+
+								'</div>';
+					$('.comments').prepend(d);
+				});		
+			});
+		})		
+	</script>
+
+</head>
+<body>
+
+
+	<!-- navbar -->
+	<header class="col-10">
+		<nav>
+			<div class="navlogo"><a href="/"><img src="images/logo.png" width="36px;" height="100%"></a></div>
+			<div class="navbarsearch">
+				<form class="navbarsearchform" method="post" action="/search">
+					<input id="input" type="text" name="searchname" placeholder="search">
+					<input id="submit" type="submit" value="GO">
+				</form>
+			</div>
+			<button class="navb" style="margin-left:35px"><a href="/ananomous">Ananomous</a></button>
+			<button class="navb"><a href="/logout">Log out</a></button>
+			<button class="navbsmall">|||</button>
+		</nav>
+	</header>
+	<div class="menu">
+		<button class="menub"><a href="/ananomous">Ananomous</a></button>
+		<button class="menub"><a href="/logout">Log out</a></button>
+	</div>
+
+	
+		<!-- phonebar -->
+	<div class="phonebar">
+			<div class="phonebarinner">
+			<button class="phonebarbutton"><span class="phonebarimage"><img src="images/profile.png" height="20px" width="20px"></span><span class="phonebarlink"><a href="/profile">Profile</a></span></button>
+				<button class="phonebarbutton"><span class="phonebarimage"><img src="images/friends.png" height="20px" width="20px"></span><span class="phonebarlink"><a href="/friends">Friends</a></span></button>
+				<button class="phonebarbutton"><span class="phonebarimage"><img src="images/requests.png" height="20px" width="20px"></span><span class="phonebarlink"><a href="/requests">Requests</a></span></button>
+		</div>
+	</div>
+
+	<div class="friends">
+		<div class="friendsinner">FRIENDS</div>
+			<% friends.forEach(friend=>{%>
+				<a href="profile/<%= friend.friend.username %>"><div class="friendsdiv"><img src="images/<%= friend.friend.profilephoto %>" width="40px" height="40px" style="margin-right:4px;"><span style="margin-left: 5px;"><%= friend.friend.firstName %> (@<%= friend.friend.username %>)</span></div></a>
+			<%})%>
+		</div>
+	</div>
+	
+
+	<div class="container">
+		<!-- sidemenu -->
+		<div class=" leftside col-2" style="height:100%;">
+			<div class="sidemenu">
+				<button class="sidemenubutton"><span class="sidemenubuttonimage"><img style="border-radius: 100px;" src="/images/<%= user.profilephoto %>" height="20px" width="20px"></span><span><a href="/profile"><%= user.firstName%></a></span></button>
+				<button class="sidemenubutton"><span class="sidemenubuttonimage"><img src="/images/friends.png" height="20px" width="20px"></span><span><a href="/friends">Friends</a></span></button>
+				<button class="sidemenubutton"><span class="sidemenubuttonimage"><img src="/images/requests.png" height="20px" width="20px"></span><span><a href="/requests">Requests</a></span></button>
+			</div>
+		</div>
+
+
+
+		<!-- show button -->
+
+		
+		
+		<!-- user ka apost  -->
+		
+		<div class="col-5 feedarea useraposts" style="height:100%;">
+			<button class="show">Switch to all ananomous posts</button>
+			<div class="Create" style="margin-top:20px">
+				<div class="createheader">
+					Create Post
+				</div>
+				<div class="createbody">
+					<form action="/ananomous/newpost" id="createform" method="POST" style="margin:0;">
+						<textarea form="createform" class="createbodytext" onkeyup="adjusttextarea(this)" name="posttext" placeholder="Write something"></textarea>
+						<input type="file" name="postimage" style="display:none;" id="postimage">
+						<div class="createtab">
+							<button type="button" class="createb"><span style="font-size: 17px;margin-right: 4px;margin-top: 2px;" class="material-icons">insert_photo</span><label style="position:relative;bottom:3px" for="postimage">Photo</label></button>
+							<button type="submit" class="createb"><span style="font-size: 17px;margin-right: 4px;margin-top: 2px;" class="material-icons">publish</span><span style="position:relative;bottom:3px">Upload</span></button>
+					    </div>
+					</form>
+					
+				</div>
+			</div>
+			
+			<% if(user.aposts.length===0){%>
+				<div class="nopost">No posts yet!</div>
+			<%}else{
+				user.aposts.forEach(post=>{ %>
+					<div class="post">
+						<div class="postheader">
+							<div class="postheadertext">
+								<div>Ananomous</div>
+								<div style="font-size:10px"><%=(JSON.stringify(post.updatedAt)).slice(1,11)%></div>
+							</div>
+						</div>
+						<div class="postcaption">
+							<%= post.caption %>
+						</div>
+						<%if(post.image!==""){%>
+						<div class="postimage">
+							<img src="images/<%= post.image %>">
+						</div>
+						<% } %>
+						<div class="poststats">
+							<span class="likes<%= post._id %>"><%= post.likes %> likes</span><span class="comments<%= post._id %>"> <%= post.comments.length %> comments</span>
+						</div>
+						<div class="posttodo">
+							<button class="likeb" <%if((post.likesby.findIndex(i=>i.username===user.username))>-1){%> data-cur="true" style="color:blue" <% }else{ %> data-cur="false" <% } %>value="<%= post._id %>"><span style="font-size: 17px;margin-right: 4px;margin-top: 2px;"class="material-icons">thumb_up</span><span style="position:relative;bottom:3px">Like</span></button>
+							<button class="commentb" type="submit" form="<%= post._id %>post-comment-form"><span style="font-size: 17px;margin-right: 4px;margin-top: 2px;"class="material-icons">mode_comment</span><span style="position:relative;bottom:3px">Comment</span></button>
+						</div>
+						<div class="postcomment">
+							<form id="<%= post._id %>post-comment-form" class="commentform" >
+								<img style="border-radius: 100px;" src="/images/<%= user.profilephoto %>" height="25px" width="25px;">
+								<input type="hidden" name="postid" value="<%= post._id %>"/>
+								<input class="inputcomment"  name="comment" type="text" placeholder="comment ..." required>
+							</form>
+						</div>
+
+						<% 
+							post.comments.sort(function(a,b){
+								var date1=new Date(a.updatedAt),date2=new Date(b.updatedAt);
+								return date2-date1;
+							});
+						
+						if(post.comments.length!==0){ %>
+						<div class="comments"  <% if(typeof post.comments!=="undefined"){ %> style="border-top:1px solid lightgrey"  <% } %>   >
+							<%if(post.comments.length!==0){post.comments.forEach(comment=>{%>
+								<div class="eachcomment">
+									<span class="eachcommentauthor">
+										<%= comment.author.username %> •
+									</span>
+									<span class="eachcommenttext">
+										<%= comment.text %>
+									</span>
+								</div>
+							<%})}%>	
+						</div>
+						<% } %>		
+					</div>
+			<% }); } %>	
+		</div>
+
+		<!-- saara apost  -->
+
+		<div class="col-5 feedarea allaposts" style="height:100%;">
+			<button class="show">Switch to your ananomous posts</button>
+			
+			<% if(posts.length===0){%>
+				<div class="nopost">No posts yet!</div>
+			<%}else{
+				posts.forEach(post=>{ %>
+					<div class="post">
+						<div class="postheader">
+							<div class="postheadertext">
+								<div>Ananomous</div>
+								<div style="font-size:10px"><%=(JSON.stringify(post.updatedAt)).slice(1,11)%></div>
+							</div>
+						</div>
+						<div class="postcaption">
+							<%= post.caption %>
+						</div>
+						<%if(post.image!==""){%>
+						<div class="postimage">
+							<img src="images/<%= post.image %>">
+						</div>
+						<% } %>
+						<div class="poststats">
+							<span class="likes<%= post._id %>"><%= post.likes %> likes</span><span class="comments<%= post._id %>"> <%= post.comments.length %> comments</span>
+						</div>
+						<div class="posttodo">
+							<button class="likeb" <%if((post.likesby.findIndex(i=>i.username===user.username))>-1){%> data-cur="true" style="color:blue" <% }else{ %> data-cur="false" <% } %>value="<%= post._id %>"><span style="font-size: 17px;margin-right: 4px;margin-top: 2px;"class="material-icons">thumb_up</span><span style="position:relative;bottom:3px">Like</span></button>
+							<button class="commentb" type="submit" form="<%= post._id %>post-comment-form"><span style="font-size: 17px;margin-right: 4px;margin-top: 2px;"class="material-icons">mode_comment</span><span style="position:relative;bottom:3px">Comment</span></button>
+						</div>
+						<div class="postcomment">
+							<form id="<%= post._id %>post-comment-form" class="commentform" >
+								<img style="border-radius: 100px;" src="/images/<%= user.profilephoto %>" height="25px" width="25px;">
+								<input type="hidden" name="postid" value="<%= post._id %>"/>
+								<input class="inputcomment"  name="comment" type="text" placeholder="comment ..." required>
+							</form>
+						</div>
+
+						<% 
+							post.comments.sort(function(a,b){
+								var date1=new Date(a.updatedAt),date2=new Date(b.updatedAt);
+								return date2-date1;
+							});
+						
+						if(post.comments.length!==0){ %>
+						<div class="comments"  <% if(typeof post.comments!=="undefined"){ %> style="border-top:1px solid lightgrey"  <% } %>   >
+							<%if(post.comments.length!==0){post.comments.forEach(comment=>{%>
+								<div class="eachcomment">
+									<span class="eachcommentauthor">
+										<%= comment.author.username %> •
+									</span>
+									<span class="eachcommenttext">
+										<%= comment.text %>
+									</span>
+								</div>
+							<%})}%>	
+						</div>
+						<% } %>		
+					</div>
+			<% }); } %>	
+		</div>
+
+
+
+
+	</div>		
+
+
+	<footer class="col-10">
+
+	</footer>
+</body>

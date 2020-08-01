@@ -1,0 +1,78 @@
+<head>
+	<title>Social</title>
+	<script url="main.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/login.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<link href='https://fonts.googleapis.com/css?family=Megrim' rel='stylesheet'>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<script>
+		function signup(){
+			var ele=document.querySelector(".signup");
+			var ele2=document.querySelector(".loginform");
+			var ele3=document.querySelector(".spani1");
+			var ele4=document.querySelector(".spani2");
+		
+			if(ele.style.display=="none"){
+				ele.style.display="block";
+				ele2.style.display="none";
+				ele3.style.display="none";
+				ele4.style.display="block";
+			}
+			else{
+				ele.style.display="none";
+				ele2.style.display="block";
+				ele3.style.display="block";
+				ele4.style.display="none";
+			}
+		}
+		function showpass(){
+			var ele=document.getElementById("pass");
+			if(ele.type=="password"){
+				ele.type="text";
+			}else{
+				ele.type="password";
+			}
+		}
+	</script>
+</head>
+<body>
+
+
+	<!-- navbar -->
+	<header>
+		<div class="title" style="font-family: Megrim;">
+			SOCIAL SOUNDS
+		</div>
+	</header>
+	<div class="container">
+		<div class="empty">
+		</div>
+		<div class="login">
+			<div class="logininner">
+				<form class="loginform" method="POST" action="/login">
+					<input style="margin-bottom:15px;" type="text" name="username" placeholder="username" required>
+					<input style="margin-bottom:15px;" id="pass" type="password" name="password" placeholder="password" required>
+					<button type="submit">Log In</button> 
+					</form>
+					<div class="spani1 spani"> A new user?<br><button class="signupb" type="button" onclick="signup()">Sign Up</button></div>
+					<form class="signup" method="POST" action="/signup">
+						<input style="margin-bottom:15px;" type="text" name="firstname" placeholder="Firstname" required>
+						<input style="margin-bottom:15px;" type="text" name="surname" placeholder="Surname" required>
+						<input style="margin-bottom:15px;" type="text" name="username" placeholder="User Name" required>
+						<input style="margin-bottom:15px;" type="text" name="password" placeholder="New Password" required>
+						<input style="margin-bottom:15px;" type="text" name="password2" placeholder="Confirm Password" rquired>
+						<button type="submit">Sign Up</button>
+					</form>
+					<div class="spani2 spani"> Back to login?<br><button class="signupb" type="button" onclick="signup()">Log in</button></div>
+				
+			</div>
+		</div>
+		
+		
+	</div>
+	<footer class="col-10">
+		<div class="footer2">Made By Hipranshu (7737283112)</div>
+	</footer>
+</body>

@@ -1,0 +1,381 @@
+*{
+	box-sizing: border-box;
+}
+html{
+	background-color: #afb0b5;
+	height: 100%;
+	overflow: hidden;
+}
+body{
+	height: 100%;
+	overflow: auto;
+	margin:0;
+	padding:0;
+	font-family: sans-serif;	
+}
+a{
+	text-decoration: none;
+	color:white;
+}
+.container{
+	margin:100px 50px 0 150px;
+	min-height: 88vh;
+}
+.col-1 {width:10%;
+	float: left;
+	margin:0;
+	padding:0;
+	display: block;
+}
+.col-2 {width:20%;
+	float: left;
+	margin:0;
+	padding:0;
+	display: block;
+	background-color: brown;
+}
+.col-3 {width:30%;
+	float: left;
+	display: block;
+	margin:0;
+	padding:0;	
+	/*background-color: pink;*/
+}
+.col-4 {width:40%;
+	float: left;
+	display: block;
+	margin:0;
+	padding:0;
+}
+.col-5 {width:50%;
+	float: left;
+	margin:0;
+	padding:0;
+	display: block;
+	/*background-color: red;*/
+}
+.col-6 {width:60%;
+	float: left;
+	margin:0;
+	padding:0;
+	display: block;
+	/*background-color: orange;*/
+}
+.col-7 {width:70%;
+	float: left;
+	margin:0;
+	padding:0;
+	display: block;
+	/*background-color:blue; */
+}
+.col-8 {width:80%;
+	float: left;
+	margin:0;
+	padding:0;
+	display: block;
+}
+.col-9 {width:90%;
+	float: left;
+	margin:0;
+	padding:0;
+	display: block;
+}
+.col-10 {width:100%;
+	float: left;
+	margin:0;
+	padding:0;
+	display: block;
+}
+header{
+	background-color:#468E82;
+	height: 50px;
+	position: fixed;
+	width: 100%;
+	top:0;
+}
+nav{
+	height: 50px;
+	width:100%;
+	margin-left:150px;
+	margin-right: 150px;
+}
+button{
+	outline:none;
+}
+.navb{
+	height:24px;
+	border:none;
+	margin:13px 0 13px 5px;
+	display: inline-block;
+	float:left;
+	background: transparent;
+	padding:0 5px 0 5px;
+	margin-left: 30px;
+}
+.navbsmall{
+	position: absolute;
+	right:3px;
+	top:0;
+	height:24px;
+	color:white;
+	border:none;
+	margin:13px 0 13px 10px;
+	display: none;
+	float:left;
+	background: transparent;
+	padding:0 15px 0 15px;
+	transition: transform .8s ease-in-out; 
+}
+.navlogo{
+	height:30px;
+	margin:10px 15px 10px 25px;
+	display: inline-block;
+	float:left;
+	margin-right:10px;
+}
+.navb:hover{
+	background-color: #49726C;
+	transition: all 0.3s;
+}
+.navb>a{
+	text-decoration: none;
+	font-size: 15px;
+	font-family: sans-serif;
+	color:white;
+}
+.navbarsearch{
+	display: block;
+	float:left;
+	width:450px;
+	height: 24px;
+	margin-top: 13px;
+	margin-bottom: 13px;
+}
+.navbarsearchform{
+	margin:0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+#input{
+	border-radius:5px;
+	border:none;
+	padding: 0 0 0 10px;
+	margin: 0;
+	width:100%;
+	height:100%;
+}
+#submit{
+	padding:0;
+	margin:0;
+	margin-left:-35px;
+	border:none;
+	background-color: white;
+	outline:none;
+	border-radius:5px;
+	height:100%;
+}
+.menu{
+	background-color: #468E82;
+	height: auto;
+	z-index:999999;
+	position: fixed;
+	display:block;
+	top:0px;
+	width:100px;
+	right:0;
+	color:white;
+	transition: all 0.5s;
+}
+.menub{
+	border:none;
+	display: none;
+	width: 100%;
+	height:50px;
+	background-color: transparent;
+	color:white;
+}
+.menub:hover{
+	background-color:#49726C;
+}
+.phonebar{
+	position: absolute;
+	display: none;
+	top:50px;
+	z-index:9999;
+	margin-top:0;
+	width: 100%;
+	height:35px;
+	padding:0;
+	background-color:#468E82; 
+	overflow: hidden;
+}
+.phonebarbutton{
+	background-color: transparent;
+	margin:0;
+	padding:0;
+	overflow:hidden;
+	width:32.5%;
+	height: 100%;
+	vertical-align: center;
+	border:none;
+}
+.phonebarbutton:hover{
+	background-color: #49726C;
+	transition: all 0.3s;
+}
+.phonebarimage{
+	margin:0;
+	padding:0;
+	margin-right: 4px;
+}
+.phonebarlink{
+	margin:0;
+	padding:0;
+}
+.phonebarlink>a{
+	text-decoration: none;
+	font-size: 10px;
+	color:white;
+	font-size: auto;
+}
+
+.friend{
+	height: 100px;
+	width:400px;
+	display: block;
+	float:left;
+	margin-right: 10px;
+	margin-bottom: 15px;
+	background-color: #468e82;
+	overflow:hidden;
+	border-radius: 5px; 
+}
+.friendimage{
+	float: left;
+	width:100px;
+	height: 100%;
+	background-color: #49726C;
+	padding:10px;
+}
+.friendname{
+	float: left;
+	height: 100%;
+	width:300px;
+	background-color: transparent;
+
+}
+.cancelreq{
+	border:none;
+	width:100%;
+	padding:0 3px 0 3px;
+	margin:0;
+	color:white;
+	background-color: #151719;
+	margin-top: 5px;
+	height:26px;
+}
+.remfriend{
+	border:none;
+	width:100%;
+	padding:0 3px 0 3px;
+	margin:0;
+	color:white;
+	background-color: #151719;
+	margin-top: 5px;
+	height:26px;
+}
+.acceptreq{
+	border:none;
+	width:100%;
+	padding:0 3px 0 3px;
+	margin:0;
+	color:white;
+	background-color: #151719;
+	margin-top: 5px;
+	height:26px;
+}
+.addfriend{
+	border:none;
+	width:100%;
+	padding:0 3px 0 3px;
+	margin:0;
+	color:white;
+	background-color: #151719;
+	margin-top: 5px;
+	height:26px;
+}
+.addfriend:hover{
+	background-color: darkblue;
+}
+.acceptreq:hover{
+	background-color: green;
+}
+.remfriend:hover{
+	background-color:darkred;
+}
+.cancelreq:hover{
+	background-color: red;
+}
+footer{
+	height: 40px;
+	background-color: #468e82;
+}
+.footer2{
+	padding: 10px;
+	text-align: center;
+	height:20px;
+	width:100%;
+	color:white;
+}
+@media only screen and (max-width: 980px){
+	.container{
+		margin:80px 2vh 30px 2vh;
+	}
+	nav{
+		margin-left:10px;
+	}
+	.navb{
+		margin-left: 10px;
+	}
+	.navbarsearch{
+		width:300px;
+	}
+}
+@media only screen and (max-width: 620px){
+	header{
+		position: absolute;
+	}
+	.phonebar{
+		display: block;
+	}
+	
+	.navbarsearch{
+		width:60%;
+	}
+	.navb{
+		display: none;
+	}
+	.navbsmall{
+		display: block;
+	}
+	.container{
+		margin-top: 100px;
+		width:100%;
+	}
+	.friend{
+		width:94%;
+		margin-right: 0;
+	}
+	.friendimage{
+		width:30%;
+	}
+	.friendname{
+		width:70%;
+	}
+	.phonebarbutton{
+		width: 31%;
+	}
+
+}
